@@ -10,7 +10,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "zhihu": "node scripts/export-zhihu.ts"
+    "zhihu": "node scripts/export-zhihu.ts",
+    "pages": "node scripts/deploy-pages.ts"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^7.3.8",
