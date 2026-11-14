@@ -1,0 +1,78 @@
+---
+import 'katex/dist/katex.min.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import AmbientGuitar from '../components/AmbientGuitar.astro';
+import { useTranslations, defaultLang, type Lang } from '../i18n/ui';
+
+interface Props {
+  title?: string;
+  description?: string;
+  lang?: Lang;
+}
+
+const { lang = defaultLang, title, description } = Astro.props;
+const t = useTranslations(lang);
+const pageTitle = title ? `${title} | ${t('site.title')}` : t('site.title');
+const pageDescription = description ?? t('site.description');
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="alternate" type="application/rss+xml" title={t('site.title')} href="/rss.xml" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+    <script is:inline>
+      (function () {
+        const saved = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = saved === 'dark' || saved === 'light' ? saved : prefersDark ? 'dark' : 'light';
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <Header lang={lang} />
+      <main>
+        <slot />
+      </main>
+      <footer class="site-footer">
+        <small>&copy; {new Date().getFullYear()}</small>
+      </footer>
+    </div>
+    <AmbientGuitar />
+  </body>
+</html>
+
+<style>
+  .container {
+    width: 100%;
+    padding: 0 1rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (min-width: 900px) {
+    .container {
+      width: min(92vw, var(--layout-max-width));
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+  }
+  main {
+    flex: 1;
+  }
+  .site-footer {
+    border-top: 1px solid var(--border);
+    margin-top: 4rem;
+    padding: 1.5rem 0;
+    color: var(--muted);
+  }
+</style>

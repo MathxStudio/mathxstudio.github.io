@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations, defaultLang } from '../../i18n/ui';
+
+const t = useTranslations(defaultLang);
+const notes = (await getCollection('notes', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const formatDate = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+<BaseLayout title={t('nav.notes')} description={t('notes.description')}>
+  <section class="desktop-split">
+    <div>
+      <h1>{t('nav.notes')}</h1>
+      <p class="muted">{t('notes.description')}</p>
+    </div>
+
+    <div>
+      {notes.length === 0 ? (
+        <p class="muted">{t('post.empty')}</p>
+      ) : (
+        <ul class="entry-list">
+          {notes.map((note) => (
+            <li class="entry-item">
+              <div class="entry-meta">
+                <time datetime={note.data.date.toISOString()}>{formatDate(note.data.date)}</time>
+                {note.data.topic && <span class="badge">{note.data.topic}</span>}
+              </div>
+              <a href={`/notes/${note.id}`} class="entry-title">
+                {note.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  h1 {
+    margin: 0 0 0.5rem;
+  }
+  .muted {
+    margin: 0;
+    color: var(--muted);
+  }
+  .entry-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .entry-item {
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .entry-item:first-child {
+    padding-top: 0;
+  }
+  .entry-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.25rem;
+  }
+  .badge {
+    border: 1px solid var(--border);
+    padding: 0.05rem 0.4rem;
+  }
+  .entry-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .entry-title:hover {
+    text-decoration: underline;
+  }
+</style>

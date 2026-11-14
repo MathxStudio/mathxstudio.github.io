@@ -1,16 +1,91 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { useTranslations, defaultLang } from '../i18n/ui';
+
+const t = useTranslations(defaultLang);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout>
+  <section class="desktop-split">
+    <div class="intro">
+      <h1>{t('site.title')}</h1>
+      <p class="lead">Mathematics, guitar, architecture, and photography.</p>
+    </div>
+
+    <div class="sections-grid">
+      <a href="/writing" class="section-card">
+        <span class="index">01</span>
+        <h2>{t('nav.writing')}</h2>
+        <p>Essays and articles.</p>
+      </a>
+
+      <a href="/notes" class="section-card">
+        <span class="index">02</span>
+        <h2>{t('nav.notes')}</h2>
+        <p>Definitions, proofs, and notes.</p>
+      </a>
+
+      <a href="/photography" class="section-card">
+        <span class="index">03</span>
+        <h2>{t('nav.photography')}</h2>
+        <p>Architecture and light.</p>
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .intro h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .lead {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--muted);
+  }
+  .sections-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .section-card {
+    display: block;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+  }
+  .section-card:hover {
+    border-color: var(--fg);
+    color: inherit;
+  }
+  .section-card .index {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+  }
+  .section-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+  }
+  .section-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  @media (min-width: 900px) {
+    .sections-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+    .section-card {
+      padding: 1.75rem 1.5rem;
+      min-height: 12rem;
+    }
+  }
+</style>

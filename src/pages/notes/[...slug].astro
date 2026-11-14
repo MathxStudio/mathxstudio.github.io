@@ -1,0 +1,109 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations, defaultLang } from '../../i18n/ui';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes', ({ data }) => !data.draft);
+  return notes.map((note) => ({
+    params: { slug: note.id },
+    props: { note },
+  }));
+}
+
+const { note } = Astro.props;
+const { Content, headings } = await render(note);
+const t = useTranslations(defaultLang);
+const formatDate = (d: Date) => d.toISOString().slice(0, 10);
+const toc = headings.filter((h) => h.depth <= 3);
+---
+
+<BaseLayout title={note.data.title}>
+  <article class="desktop-split">
+    <aside class="post-sidebar">
+      <a href="/notes" class="back-link">{t('post.back.notes')}</a>
+      <div class="meta-block">
+        <time datetime={note.data.date.toISOString()}>{formatDate(note.data.date)}</time>
+        {note.data.topic && (
+          <div class="tags">
+            <span class="badge">{note.data.topic}</span>
+          </div>
+        )}
+      </div>
+
+      {toc.length > 0 && (
+        <nav class="toc" aria-label={t('post.toc')}>
+          <div class="toc-title">{t('post.toc')}</div>
+          <ul>
+            {toc.map((h) => (
+              <li style={`padding-left: ${Math.max(0, h.depth - 2) * 0.75}rem`}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+    </aside>
+
+    <div class="prose">
+      <h1 class="post-title">{note.data.title}</h1>
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .post-sidebar {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  @media (min-width: 900px) {
+    .post-sidebar {
+      position: sticky;
+      top: 2rem;
+    }
+  }
+  .back-link {
+    display: inline-block;
+    text-decoration: none;
+    margin-bottom: 1rem;
+  }
+  .meta-block {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+  }
+  .tags {
+    margin-top: 0.5rem;
+  }
+  .badge {
+    border: 1px solid var(--border);
+    padding: 0.05rem 0.4rem;
+  }
+  .toc {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+  }
+  .toc-title {
+    font-weight: 600;
+    color: var(--fg);
+    margin-bottom: 0.5rem;
+  }
+  .toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .toc li {
+    margin: 0.3rem 0;
+  }
+  .toc a {
+    text-decoration: none;
+  }
+  .post-title {
+    margin-top: 0;
+    line-height: 1.25;
+  }
+</style>

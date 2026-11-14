@@ -1,0 +1,165 @@
+---
+import { readFile } from 'node:fs/promises';
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import exifr from 'exifr';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations, defaultLang } from '../../i18n/ui';
+
+interface ExifData {
+  Model?: string;
+  LensModel?: string;
+  FocalLength?: number;
+  FNumber?: number;
+  ExposureTime?: number;
+  ISO?: number;
+}
+
+const t = useTranslations(defaultLang);
+const items = (await getCollection('photography')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+function formatExposure(seconds?: number): string | undefined {
+  if (!seconds || seconds <= 0) return undefined;
+  return seconds >= 1 ? `${seconds}s` : `1/${Math.round(1 / seconds)}s`;
+}
+
+async function readExifSummary(imageMeta: { fsPath?: string; width: number; height: number }): Promise<string> {
+  const fsPath = imageMeta.fsPath?.split('?')[0];
+  if (!fsPath) return `${imageMeta.width}×${imageMeta.height}`;
+
+  try {
+    const buffer = await readFile(fsPath);
+    const parsed = (await exifr.parse(buffer, [
+      'Model',
+      'LensModel',
+      'FocalLength',
+      'FNumber',
+      'ExposureTime',
+      'ISO',
+    ])) as ExifData | undefined;
+
+    if (!parsed) return `${imageMeta.width}×${imageMeta.height}`;
+
+    const parts = [
+      parsed.Model,
+      parsed.LensModel,
+      parsed.FocalLength ? `${parsed.FocalLength}mm` : undefined,
+      parsed.FNumber ? `f/${parsed.FNumber}` : undefined,
+      formatExposure(parsed.ExposureTime),
+      parsed.ISO ? `ISO ${parsed.ISO}` : undefined,
+    ].filter((part): part is string => Boolean(part));
+
+    return parts.length > 0 ? parts.join(' · ') : `${imageMeta.width}×${imageMeta.height}`;
+  } catch {
+    return `${imageMeta.width}×${imageMeta.height}`;
+  }
+}
+
+const photos = await Promise.all(
+  items.map(async (item) => ({
+    item,
+    exif: await readExifSummary(item.data.image as { fsPath?: string; width: number; height: number }),
+  }))
+);
+
+const formatDate = (d: Date) => d.toISOString().slice(0, 10);
+---
+
+<BaseLayout title={t('nav.photography')} description={t('photography.description')}>
+  <section class="desktop-split">
+    <div>
+      <h1>{t('nav.photography')}</h1>
+      <p class="muted">{t('photography.description')}</p>
+    </div>
+
+    <div>
+      {photos.length === 0 ? (
+        <p class="muted">{t('post.empty')}</p>
+      ) : (
+        <div class="photo-grid">
+          {photos.map(({ item, exif }) => (
+            <figure class="photo-card">
+              <Image
+                src={item.data.image}
+                alt={item.data.title}
+                widths={[640, 1280]}
+                sizes="(max-width: 899px) 100vw, 44rem"
+                class="photo-img"
+              />
+              <figcaption class="photo-caption">
+                <div class="photo-head">
+                  <strong>{item.data.title}</strong>
+                  <span class="photo-date">
+                    {formatDate(item.data.date)}
+                    {item.data.location ? ` · ${item.data.location}` : ''}
+                  </span>
+                </div>
+                <div class="photo-exif">{exif}</div>
+                {item.data.description && <p class="photo-desc">{item.data.description}</p>}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  h1 {
+    margin: 0 0 0.5rem;
+  }
+  .muted {
+    margin: 0;
+    color: var(--muted);
+  }
+  .photo-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  @media (min-width: 900px) {
+    .photo-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 2rem;
+    }
+  }
+  .photo-card {
+    margin: 0;
+    border: 1px solid var(--border);
+    padding: 0.75rem;
+  }
+  .photo-img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .photo-caption {
+    margin-top: 0.75rem;
+  }
+  .photo-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .photo-date {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .photo-exif {
+    margin-top: 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .photo-desc {
+    margin: 0.5rem 0 0;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+</style>

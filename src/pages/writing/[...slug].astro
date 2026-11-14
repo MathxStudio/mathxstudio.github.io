@@ -1,0 +1,124 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { useTranslations, defaultLang } from '../../i18n/ui';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('writing', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const t = useTranslations(defaultLang);
+const formatDate = (d: Date) => d.toISOString().slice(0, 10);
+const toc = headings.filter((h) => h.depth <= 3);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article class="desktop-split">
+    <aside class="post-sidebar">
+      <a href="/writing" class="back-link">{t('post.back.writing')}</a>
+      <div class="meta-block">
+        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        {post.data.tags.length > 0 && (
+          <div class="tags">
+            {post.data.tags.map((tag) => (
+              <span class="badge">#{tag}</span>
+            ))}
+          </div>
+        )}
+        {post.data.zhihuUrl && (
+          <p class="zhihu-wrap">
+            <a href={post.data.zhihuUrl} target="_blank" rel="noopener noreferrer">
+              {t('post.zhihu')}
+            </a>
+          </p>
+        )}
+      </div>
+
+      {toc.length > 0 && (
+        <nav class="toc" aria-label={t('post.toc')}>
+          <div class="toc-title">{t('post.toc')}</div>
+          <ul>
+            {toc.map((h) => (
+              <li style={`padding-left: ${Math.max(0, h.depth - 2) * 0.75}rem`}>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+    </aside>
+
+    <div class="prose">
+      <h1 class="post-title">{post.data.title}</h1>
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .post-sidebar {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  @media (min-width: 900px) {
+    .post-sidebar {
+      position: sticky;
+      top: 2rem;
+    }
+  }
+  .back-link {
+    display: inline-block;
+    text-decoration: none;
+    margin-bottom: 1rem;
+  }
+  .meta-block {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+  }
+  .badge {
+    border: 1px solid var(--border);
+    padding: 0.05rem 0.4rem;
+  }
+  .zhihu-wrap {
+    margin: 0.75rem 0 0;
+  }
+  .toc {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+  }
+  .toc-title {
+    font-weight: 600;
+    color: var(--fg);
+    margin-bottom: 0.5rem;
+  }
+  .toc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .toc li {
+    margin: 0.3rem 0;
+  }
+  .toc a {
+    text-decoration: none;
+  }
+  .post-title {
+    margin-top: 0;
+    line-height: 1.25;
+  }
+</style>

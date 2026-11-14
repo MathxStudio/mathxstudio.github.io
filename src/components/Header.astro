@@ -1,0 +1,209 @@
+---
+import { useTranslations, defaultLang, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+
+const { lang = defaultLang } = Astro.props;
+const t = useTranslations(lang);
+const pathname = Astro.url.pathname;
+
+const links = [
+  { href: '/', label: t('nav.home'), active: pathname === '/' },
+  { href: '/writing', label: t('nav.writing'), active: pathname.startsWith('/writing') },
+  { href: '/notes', label: t('nav.notes'), active: pathname.startsWith('/notes') },
+  { href: '/photography', label: t('nav.photography'), active: pathname.startsWith('/photography') },
+];
+---
+
+<header class="site-header">
+  <div class="header-bar">
+    <a href="/" class="brand">{t('site.title')}</a>
+
+    <!-- Desktop Navigation (>= 900px) -->
+    <nav class="desktop-nav" aria-label="Primary">
+      {links.map((link) => (
+        <a href={link.href} aria-current={link.active ? 'page' : undefined}>
+          {link.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="header-actions">
+      <a href="/rss.xml" class="rss-btn" target="_blank" rel="noopener noreferrer" aria-label="RSS">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M4 11a9 9 0 0 1 9 9"></path>
+          <path d="M4 4a16 16 0 0 1 16 16"></path>
+          <circle cx="5" cy="19" r="1" fill="currentColor"></circle>
+        </svg>
+        <span>RSS</span>
+      </a>
+
+      <button id="theme-toggle" type="button" aria-label={t('theme.toggle')}>
+        <span id="theme-label">Theme</span>
+      </button>
+
+      <!-- Mobile Navigation Drawer (< 900px) -->
+      <details class="mobile-menu">
+        <summary class="mobile-menu-btn">Menu</summary>
+        <nav class="mobile-nav" aria-label="Mobile">
+          {links.map((link) => (
+            <a href={link.href} aria-current={link.active ? 'page' : undefined}>
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      </details>
+    </div>
+  </div>
+</header>
+
+<script>
+  const btn = document.getElementById('theme-toggle');
+  const label = document.getElementById('theme-label');
+
+  function updateLabel() {
+    const current = document.documentElement.dataset.theme || 'light';
+    if (label) label.textContent = current === 'dark' ? 'Light' : 'Dark';
+  }
+
+  updateLabel();
+
+  btn?.addEventListener('click', () => {
+    const current = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem('theme', next);
+    updateLabel();
+  });
+</script>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  .header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    min-height: 4rem;
+  }
+  .brand {
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  #theme-toggle,
+  .mobile-menu-btn,
+  .rss-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: transparent;
+    color: var(--fg);
+    border: 1px solid var(--border);
+    padding: 0.35rem 0.75rem;
+    font: inherit;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+  }
+  #theme-toggle:hover,
+  .mobile-menu-btn:hover,
+  .rss-btn:hover {
+    border-color: var(--fg);
+    color: var(--fg);
+  }
+
+  /* Desktop Layout (>= 900px) */
+  .desktop-nav {
+    display: none;
+  }
+  @media (min-width: 900px) {
+    .site-header {
+      margin-bottom: 3.5rem;
+    }
+    .header-bar {
+      min-height: 4.75rem;
+    }
+    .desktop-nav {
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+    }
+    .desktop-nav a {
+      text-decoration: none;
+      padding: 0.25rem 0;
+      color: var(--muted);
+    }
+    .desktop-nav a:hover,
+    .desktop-nav a[aria-current='page'] {
+      color: var(--fg);
+    }
+    .desktop-nav a[aria-current='page'] {
+      font-weight: 600;
+      border-bottom: 2px solid var(--fg);
+    }
+    .mobile-menu {
+      display: none;
+    }
+  }
+
+  /* Mobile Layout (< 900px) */
+  @media (max-width: 899px) {
+    .mobile-menu > summary {
+      list-style: none;
+    }
+    .mobile-menu > summary::-webkit-details-marker {
+      display: none;
+    }
+    .mobile-nav {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 0.25rem 0;
+      z-index: 20;
+    }
+    .mobile-nav a {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      text-decoration: none;
+      padding: 0.5rem 0.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-nav a:last-child {
+      border-bottom: none;
+    }
+    .mobile-nav a[aria-current='page'] {
+      font-weight: 600;
+    }
+  }
+</style>

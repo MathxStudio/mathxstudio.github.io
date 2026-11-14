@@ -1,0 +1,31 @@
+---
+title: Banach Fixed-Point Theorem
+date: 2026-11-14
+topic: Analysis
+---
+
+## Statement
+
+Let $(X, d)$ be a non-empty complete metric space and let $T : X \to X$ be a contraction mapping, meaning there exists $q \in [0, 1)$ such that for all $x, y \in X$:
+
+$$
+d(T(x), T(y)) \le q \, d(x, y)
+$$
+
+Then $T$ admits a unique fixed point $x^* \in X$ satisfying $T(x^*) = x^*$.
+
+## Proof Sketch
+
+Pick any initial point $x_0 \in X$ and define the sequence $x_{n+1} = T(x_n)$ for $n \ge 0$. By induction:
+
+$$
+d(x_{n+1}, x_n) \le q^n d(x_1, x_0)
+$$
+
+For $m > n$, the triangle inequality yields:
+
+$$
+d(x_m, x_n) \le \sum_{k=n}^{m-1} d(x_{k+1}, x_k) \le \frac{q^n}{1 - q} d(x_1, x_0)
+$$
+
+Hence $\{x_n\}$ is Cauchy in the complete space $(X, d)$ and converges to some $x^* \in X$. Continuity of $T$ gives $T(x^*) = x^*$, and uniqueness follows immediately from $d(x^*, y^*) = d(T(x^*), T(y^*)) \le q \, d(x^*, y^*)$.
