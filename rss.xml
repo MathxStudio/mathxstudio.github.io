@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Personal Site</title>
+    <link>https://mathxstudio.github.io</link>
+    <description>Mathematics, architecture, photography, and notes.</description>
+    <item>
+      <title>On Symmetry, Proportion, and Spatial Order</title>
+      <link>https://mathxstudio.github.io/writing/on-symmetry-and-space</link>
+      <guid isPermaLink="true">https://mathxstudio.github.io/writing/on-symmetry-and-space</guid>
+      <pubDate>Sat, 14 Nov 2026 00:00:00 GMT</pubDate>
+      <description>A brief note connecting architectural proportion with mathematical invariance.</description>
+    </item>
+    <item>
+      <title>Banach Fixed-Point Theorem</title>
+      <link>https://mathxstudio.github.io/notes/banach-fixed-point</link>
+      <guid isPermaLink="true">https://mathxstudio.github.io/notes/banach-fixed-point</guid>
+      <pubDate>Sat, 14 Nov 2026 00:00:00 GMT</pubDate>
+      <description>Notes · Analysis</description>
+    </item>
+  </channel>
+</rss>
